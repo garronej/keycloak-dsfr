@@ -57,6 +57,7 @@ export const { kcContext } = getKcContext({
     },
     {
       pageId: "logout-confirm.ftl",
+      locale: { currentLanguageTag: "fr" },
     },
   ],
 });

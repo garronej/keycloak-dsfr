@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import { useConstCallback } from "powerhooks/useConstCallback";
 import { useCssAndCx } from "tss-react";
 import { KcContextBase, KcTemplateProps, getMsg } from "keycloakify";
-import { pathJoin } from "keycloakify/dist/lib/tools/pathJoin";
-import { headInsert } from "keycloakify/dist/lib/tools/headInsert";
+import { pathJoin } from "keycloakify/lib/tools/pathJoin";
+import { headInsert } from "keycloakify/lib/tools/headInsert";
 
 export type TemplateProps = {
   displayInfo?: boolean;
