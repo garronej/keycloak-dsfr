@@ -1,20 +1,10 @@
 import { useReducer, useEffect, memo } from "react";
 import type { ReactNode } from "react";
-import { useCallbackFactory } from "powerhooks/useCallbackFactory";
 import { useConstCallback } from "powerhooks/useConstCallback";
 import { useCssAndCx } from "tss-react";
-import {
-  KcContextBase,
-  KcTemplateProps,
-  useKcMessage,
-  useKcLanguageTag,
-  KcLanguageTag,
-  assert,
-  getBestMatchAmongKcLanguageTag,
-  getKcLanguageTagLabel,
-} from "keycloakify";
-import { pathJoin } from "keycloakify/lib/tools/pathJoin";
-import { headInsert } from "keycloakify/lib/tools/headInsert";
+import { KcContextBase, KcTemplateProps, getMsg } from "keycloakify";
+import { pathJoin } from "keycloakify/dist/lib/tools/pathJoin";
+import { headInsert } from "keycloakify/dist/lib/tools/headInsert";
 
 export type TemplateProps = {
   displayInfo?: boolean;
@@ -53,13 +43,7 @@ export const Template = memo((props: TemplateProps) => {
     console.log("Rendering this page with react using keycloakify");
   }, []);
 
-  const { msg } = useKcMessage();
-
-  const { kcLanguageTag, setKcLanguageTag } = useKcLanguageTag();
-
-  const onChangeLanguageClickFactory = useCallbackFactory(
-    ([languageTag]: [KcLanguageTag]) => setKcLanguageTag(languageTag)
-  );
+  const { msg } = getMsg(kcContext);
 
   const onTryAnotherWayClick = useConstCallback(
     () => (
@@ -68,34 +52,6 @@ export const Template = memo((props: TemplateProps) => {
   );
 
   const { realm, locale, auth, url, message, isAppInitiatedAction } = kcContext;
-
-  useEffect(() => {
-    if (!realm.internationalizationEnabled) {
-      return;
-    }
-
-    assert(locale !== undefined);
-
-    const kcContext_kcLanguageTag = getBestMatchAmongKcLanguageTag(
-      locale.current
-    );
-
-    if (
-      ["error.ftl", "info.ftl", "login-page-expired.ftl"].indexOf(
-        kcContext.pageId
-      ) >= 0
-    ) {
-      setKcLanguageTag(kcContext_kcLanguageTag);
-
-      return;
-    }
-
-    if (kcLanguageTag !== kcContext_kcLanguageTag) {
-      window.location.href = locale.supported.find(
-        ({ languageTag }) => languageTag === kcLanguageTag
-      )!.url;
-    }
-  }, [kcLanguageTag]);
 
   const [isExtraCssLoaded, setExtraCssLoaded] = useReducer(() => true, false);
 
@@ -113,15 +69,15 @@ export const Template = memo((props: TemplateProps) => {
 
     Promise.all(
       [
-        ...toArr(props.stylesCommon).map(relativePath =>
+        ...toArr(props.stylesCommon).map((relativePath) =>
           pathJoin(url.resourcesCommonPath, relativePath)
         ),
-        ...toArr(props.styles).map(relativePath =>
+        ...toArr(props.styles).map((relativePath) =>
           pathJoin(url.resourcesPath, relativePath)
         ),
       ]
         .reverse()
-        .map(href =>
+        .map((href) =>
           headInsert({
             type: "css",
             href,
@@ -136,7 +92,7 @@ export const Template = memo((props: TemplateProps) => {
       setExtraCssLoaded();
     });
 
-    toArr(props.scripts).forEach(relativePath =>
+    toArr(props.scripts).forEach((relativePath) =>
       headInsert({
         type: "javascript",
         src: pathJoin(url.resourcesPath, relativePath),
@@ -156,7 +112,7 @@ export const Template = memo((props: TemplateProps) => {
     return () => {
       isUnmounted = true;
 
-      cleanups.forEach(f => f());
+      cleanups.forEach((f) => f());
     };
   }, [props.kcHtmlClass]);
 
@@ -179,34 +135,6 @@ export const Template = memo((props: TemplateProps) => {
         )}
       >
         <header className={cx(props.kcFormHeaderClass)}>
-          {realm.internationalizationEnabled &&
-            (assert(locale !== undefined), true) &&
-            locale.supported.length > 1 && (
-              <div id="kc-locale">
-                <div
-                  id="kc-locale-wrapper"
-                  className={cx(props.kcLocaleWrapperClass)}
-                >
-                  <div className="kc-dropdown" id="kc-locale-dropdown">
-                    <a href="#" id="kc-current-locale-link">
-                      {getKcLanguageTagLabel(kcLanguageTag)}
-                    </a>
-                    <ul>
-                      {locale.supported.map(({ languageTag }) => (
-                        <li key={languageTag} className="kc-dropdown-item">
-                          <a
-                            href="#"
-                            onClick={onChangeLanguageClickFactory(languageTag)}
-                          >
-                            {getKcLanguageTagLabel(languageTag)}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
           {!(
             auth !== undefined &&
             auth.showUsername &&

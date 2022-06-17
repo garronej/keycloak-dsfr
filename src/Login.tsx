@@ -1,7 +1,7 @@
 import { useState, memo } from "react";
 import { useConstCallback } from "powerhooks/useConstCallback";
 import type { FormEventHandler } from "react";
-import { KcContextBase, KcProps, useKcMessage } from "keycloakify";
+import { KcContextBase, KcProps, getMsg } from "keycloakify";
 import { useCssAndCx } from "tss-react";
 import { Template } from "./Template";
 
@@ -17,27 +17,27 @@ export const Login = memo(
       registrationDisabled,
     } = kcContext;
 
-    const { msg, msgStr } = useKcMessage();
-
     const [isLoginButtonDisabled, setIsLoginButtonDisabled] = useState(false);
 
-    const { cx } = useCssAndCx();
+    const { msg, msgStr } = getMsg(kcContext);
 
-    const onSubmit = useConstCallback<FormEventHandler<HTMLFormElement>>(e => {
-      e.preventDefault();
+    const onSubmit = useConstCallback<FormEventHandler<HTMLFormElement>>(
+      (e) => {
+        e.preventDefault();
 
-      setIsLoginButtonDisabled(true);
+        setIsLoginButtonDisabled(true);
 
-      const formElement = e.target as HTMLFormElement;
+        const formElement = e.target as HTMLFormElement;
 
-      //NOTE: Even if we login with email Keycloak expect username and password in
-      //the POST request.
-      formElement
-        .querySelector("input[name='email']")
-        ?.setAttribute("name", "username");
+        //NOTE: Even if we login with email Keycloak expect username and password in
+        //the POST request.
+        formElement
+          .querySelector("input[name='email']")
+          ?.setAttribute("name", "username");
 
-      formElement.submit();
-    });
+        formElement.submit();
+      }
+    );
 
     return (
       <Template
@@ -165,7 +165,7 @@ export const Login = memo(
             {realm.password && social.providers !== undefined && (
               <div id="kc-social-providers" className="fr-mt-3w">
                 <ul>
-                  {social.providers.map(p => (
+                  {social.providers.map((p) => (
                     <>
                       {p.providerId === "franceconnect-particulier" ? (
                         <div
